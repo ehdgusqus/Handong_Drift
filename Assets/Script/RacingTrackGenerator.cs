@@ -6,11 +6,11 @@ public class RacingTrackGenerator : MonoBehaviour
 {
     [Header("Track Dimensions")]
     [Tooltip("트랙 폭 (미터)")]
-    public float trackWidth = 10f;
+    public float trackWidth = 10f;  // miter 단위
     
     [Tooltip("트랙 해상도 (높을수록 부드러움)")]
     [Range(10, 200)]
-    public int pathResolution = 50;
+    public int pathResolution = 50; // 트랙 해상도
     
     [Header("Curbs (커브)")]
     [Tooltip("커브 추가")]
@@ -52,16 +52,15 @@ public class RacingTrackGenerator : MonoBehaviour
             pathCreator = GetComponent<PathCreator>();
         }
         
-        // 유효성 검사
         if (pathCreator == null)
         {
-            Debug.LogError("이 GameObject에 Path Creator가 없습니다!");
+            Debug.LogError("이 GameObject에 Path Creator가 없습니다.");
             return;
         }
         
         if (pathCreator.path == null)
         {
-            Debug.LogError("경로가 생성되지 않았습니다! Scene에서 포인트를 추가하세요.");
+            Debug.LogError("경로가 생성되지 않았습니다. Scene에서 포인트를 추가하세요.");
             return;
         }
 
@@ -115,6 +114,7 @@ public class RacingTrackGenerator : MonoBehaviour
         int[] triangles = new int[pointCount * 6];
         Vector2[] uvs = new Vector2[vertices.Length];
 
+        // point에 따라 경로 생성
         for (int i = 0; i <= pointCount; i++)
         {
             float t = i / (float)pointCount;
@@ -122,16 +122,19 @@ public class RacingTrackGenerator : MonoBehaviour
 
             Vector3 point = path.GetPointAtDistance(distance);
             Vector3 forward = path.GetDirectionAtDistance(distance);
-            // 수정: Right 벡터를 직접 계산
+            // 오른쪽 방향 계산 (수평 평면)
             Vector3 right = Vector3.Cross(Vector3.up, forward).normalized;
 
+            // 좌우 정점 생성 (트랙 폭만큼)
             vertices[i * 2] = point - right * (trackWidth / 2f);
             vertices[i * 2 + 1] = point + right * (trackWidth / 2f);
 
+            // 텍스처 매핑용
             uvs[i * 2] = new Vector2(0, distance / trackWidth);
             uvs[i * 2 + 1] = new Vector2(1, distance / trackWidth);
         }
 
+        // 삼각형 생성해서 면 만들기
         for (int i = 0; i < pointCount; i++)
         {
             int vertIndex = i * 2;
