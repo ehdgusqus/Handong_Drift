@@ -6382,10 +6382,7 @@ SceneRoots:
   - {fileID: 2093427528}
   - {fileID: 701504301}
   - {fileID: 2046984098}
-<<<<<<< HEAD
-  - {fileID: 1037340203}
-  - {fileID: 127060867}
-  - {fileID: 800898391}
-  - {fileID: 55862461}
-=======
->>>>>>> 12520b5b8e9ced8a5204ec433c292704fecc2d0a
+  - {fileID: 1037340203}
+  - {fileID: 127060867}
+  - {fileID: 800898391}
+  - {fileID: 55862461}
