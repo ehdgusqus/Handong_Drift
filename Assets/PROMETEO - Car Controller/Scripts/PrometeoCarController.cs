@@ -91,7 +91,7 @@ public class PrometeoCarController : MonoBehaviour
       [Space(10)]
       //The following variable lets you to set up a UI text to display the speed of your car.
       public bool useUI = false;
-      public SpeedometerUI speedometerUI; // Used to store the UI object that is going to show the speed of the car.
+      public Text carSpeedText; // Used to store the UI object that is going to show the speed of the car.
 
     //SOUNDS
 
