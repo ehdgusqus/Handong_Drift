@@ -367,71 +367,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 84356872}
   m_CullTransparentMesh: 1
---- !u!1001 &127060867
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1880003867177343353, guid: a6c6513da31e94c40bbc96ea8ef1ddef, type: 3}
-      propertyPath: carEngineSound
-      value: 
-      objectReference: {fileID: 701504300}
-    - target: {fileID: 1880003867177343353, guid: a6c6513da31e94c40bbc96ea8ef1ddef, type: 3}
-      propertyPath: tireScreechSound
-      value: 
-      objectReference: {fileID: 2093427527}
-    - target: {fileID: 6138594531314379607, guid: a6c6513da31e94c40bbc96ea8ef1ddef, type: 3}
-      propertyPath: m_Name
-      value: Car
-      objectReference: {fileID: 0}
-    - target: {fileID: 9145925593397375743, guid: a6c6513da31e94c40bbc96ea8ef1ddef, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 87.54323
-      objectReference: {fileID: 0}
-    - target: {fileID: 9145925593397375743, guid: a6c6513da31e94c40bbc96ea8ef1ddef, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 72.73
-      objectReference: {fileID: 0}
-    - target: {fileID: 9145925593397375743, guid: a6c6513da31e94c40bbc96ea8ef1ddef, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 205.78
-      objectReference: {fileID: 0}
-    - target: {fileID: 9145925593397375743, guid: a6c6513da31e94c40bbc96ea8ef1ddef, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.646298
-      objectReference: {fileID: 0}
-    - target: {fileID: 9145925593397375743, guid: a6c6513da31e94c40bbc96ea8ef1ddef, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9145925593397375743, guid: a6c6513da31e94c40bbc96ea8ef1ddef, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0.76308507
-      objectReference: {fileID: 0}
-    - target: {fileID: 9145925593397375743, guid: a6c6513da31e94c40bbc96ea8ef1ddef, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9145925593397375743, guid: a6c6513da31e94c40bbc96ea8ef1ddef, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9145925593397375743, guid: a6c6513da31e94c40bbc96ea8ef1ddef, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: -99.474
-      objectReference: {fileID: 0}
-    - target: {fileID: 9145925593397375743, guid: a6c6513da31e94c40bbc96ea8ef1ddef, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: a6c6513da31e94c40bbc96ea8ef1ddef, type: 3}
 --- !u!43 &183331776
 Mesh:
   m_ObjectHideFlags: 0
@@ -4712,7 +4647,7 @@ MonoBehaviour:
       - 0
       globalNormalsAngle: 0
       flipNormals: 0
-    vertexPathUpToDate: 0
+    vertexPathUpToDate: 1
     vertexPathMaxAngleError: 0.3
     vertexPathMinVertexSpacing: 0.01
     showTransformTool: 1
@@ -4999,4 +4934,3 @@ SceneRoots:
   - {fileID: 2093427528}
   - {fileID: 701504301}
   - {fileID: 2046984098}
-  - {fileID: 127060867}
