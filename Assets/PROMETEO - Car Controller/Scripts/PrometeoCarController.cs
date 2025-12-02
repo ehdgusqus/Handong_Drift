@@ -91,7 +91,7 @@ public class PrometeoCarController : MonoBehaviour
       [Space(10)]
       //The following variable lets you to set up a UI text to display the speed of your car.
       public bool useUI = false;
-      public Text carSpeedText; // Used to store the UI object that is going to show the speed of the car.
+      public ForzaHUD carSpeedText; // This variable stores the UI text that will display the speed of the car.
 
     //SOUNDS
 
@@ -211,7 +211,7 @@ public class PrometeoCarController : MonoBehaviour
           InvokeRepeating("CarSpeedUI", 0f, 0.1f);
         }else if(!useUI){
           if(carSpeedText != null){
-            carSpeedText.text = "0";
+            carSpeedText.UpdateHUD(0);
           }
         }
 
@@ -377,7 +377,7 @@ public class PrometeoCarController : MonoBehaviour
       if(useUI){
           try{
             float absoluteCarSpeed = Mathf.Abs(carSpeed);
-            carSpeedText.text = Mathf.RoundToInt(absoluteCarSpeed).ToString();
+            carSpeedText.UpdateHUD(absoluteCarSpeed);
           }catch(Exception ex){
             Debug.LogWarning(ex);
           }
