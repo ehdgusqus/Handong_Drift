@@ -4,293 +4,219 @@ using UnityEngine;
 [RequireComponent(typeof(PathCreator))]
 public class RacingTrackGenerator : MonoBehaviour
 {
-    [Header("Track Dimensions")]
-    [Tooltip("트랙 폭 (미터)")]
-    public float trackWidth = 10f;  // miter 단위
-    
-    [Tooltip("트랙 해상도 (높을수록 부드러움)")]
-    [Range(10, 200)]
-    public int pathResolution = 50; // 트랙 해상도
-    
-    [Header("Curbs (커브)")]
-    [Tooltip("커브 추가")]
-    public bool addCurbs = true;
-    
-    [Tooltip("커브 폭")]
-    public float curbWidth = 0.5f;
-    
-    [Tooltip("커브 높이")]
-    public float curbHeight = 0.15f;
-    
-    [Header("Barriers (가드레일)")]
-    [Tooltip("가드레일 추가")]
-    public bool addBarriers = true;
-    
-    [Tooltip("가드레일 높이")]
-    public float barrierHeight = 1.0f;
-    
-    [Tooltip("가드레일 거리")]
-    public float barrierOffset = 0.5f;
-    
-    [Header("Materials")]
-    public Material trackMaterial;
-    public Material curbMaterialRed;
-    public Material curbMaterialWhite;
-    public Material barrierMaterial;
-    
-    private PathCreator pathCreator;
-    private GameObject trackObject;
+    [Header("Track Dimensions")]
+    [Tooltip("트랙 폭 (미터)")]
+    public float trackWidth = 10f;
+    
+    [Tooltip("트랙 해상도 (높을수록 부드러움, 교차로는 300 이상 추천)")]
+    [Range(10, 1000)]
+    public int pathResolution = 200; 
+    
+    [Header("Curbs (커브)")]
+    public bool addCurbs = true;
+    public float curbWidth = 0.5f;
+    public float curbHeight = 0.15f;
+    
+    [Header("Barriers (가드레일)")]
+    public bool addBarriers = true;
+    public float barrierHeight = 1.0f;
+    public float barrierOffset = 0.5f;
 
-    [ContextMenu("Generate Track")]
-    public void GenerateTrack()
-    {
-        ClearOldTrack();
-        
-        // Path Creator 가져오기
-        if (pathCreator == null)
-        {
-            pathCreator = GetComponent<PathCreator>();
-        }
-        
-        if (pathCreator == null)
-        {
-            Debug.LogError("이 GameObject에 Path Creator가 없습니다.");
-            return;
-        }
-        
-        if (pathCreator.path == null)
-        {
-            Debug.LogError("경로가 생성되지 않았습니다. Scene에서 포인트를 추가하세요.");
-            return;
-        }
+    [Header("Cutout (교차로 진입로 설정)")]
+    [Tooltip("체크하면 아래 지정된 거리 구간에는 커브와 가드레일이 생기지 않음.")]
+    public bool useCutout = false;
+    public float cutoutStartDistance = 0f;
+    public float cutoutEndDistance = 10f;
+    
+    [Header("Materials")]
+    public Material trackMaterial;
+    public Material curbMaterialRed;
+    public Material curbMaterialWhite;
+    public Material barrierMaterial;
+    
+    private PathCreator pathCreator;
+    private GameObject trackObject;
 
-        // 트랙 생성 시작
-        trackObject = new GameObject("Generated_Track");
-        trackObject.transform.parent = transform;
-        trackObject.transform.localPosition = Vector3.zero;
+    [ContextMenu("Generate Track")]
+    public void GenerateTrack()
+    {
+        ClearOldTrack();
+        
+        if (pathCreator == null) pathCreator = GetComponent<PathCreator>();
+        if (pathCreator == null || pathCreator.path == null) return;
 
-        CreateTrackSurface();
+        trackObject = new GameObject("Generated_Track");
+        trackObject.transform.parent = transform;
+        trackObject.transform.localPosition = Vector3.zero;
+        trackObject.transform.localRotation = Quaternion.identity;
 
-        if (addCurbs)
-        {
-            CreateCurbsSide(-1, curbMaterialRed);
-            CreateCurbsSide(1, curbMaterialWhite);
-        }
+        CreateTrackSurface();
 
-        if (addBarriers)
-        {
-            CreateBarrierSide(-1);
-            CreateBarrierSide(1);
-        }
+        if (addCurbs)
+        {
+            CreateCurbsSide(-1, curbMaterialRed);
+            CreateCurbsSide(1, curbMaterialWhite);
+        }
 
-        Debug.Log("트랙 생성 완료!");
-    }
+        if (addBarriers)
+        {
+            CreateBarrierSide(-1);
+            CreateBarrierSide(1);
+        }
 
-    void ClearOldTrack()
-    {
-        Transform oldTrack = transform.Find("Generated_Track");
-        if (oldTrack != null)
-        {
-            DestroyImmediate(oldTrack.gameObject);
-        }
-    }
+        Debug.Log("트랙 생성 완료!");
+    }
 
-    void CreateTrackSurface()
-    {
-        GameObject surfaceObj = new GameObject("Track_Surface");
-        surfaceObj.transform.parent = trackObject.transform;
+    void ClearOldTrack()
+    {
+        Transform oldTrack = transform.Find("Generated_Track");
+        if (oldTrack != null) DestroyImmediate(oldTrack.gameObject);
+    }
 
-        MeshFilter meshFilter = surfaceObj.AddComponent<MeshFilter>();
-        MeshRenderer meshRenderer = surfaceObj.AddComponent<MeshRenderer>();
-        MeshCollider meshCollider = surfaceObj.AddComponent<MeshCollider>();
+    // 부모 오브젝트 기준 로컬 좌표로 변환
+    Vector3 GetLocal(Vector3 worldPos) => transform.InverseTransformPoint(worldPos);
 
-        // 머티리얼 설정
-        meshRenderer.material = trackMaterial != null ? trackMaterial : CreateDefaultMaterial(new Color(0.15f, 0.15f, 0.15f));
+    void CreateTrackSurface()
+    {
+        GameObject obj = new GameObject("Track_Surface");
+        obj.transform.parent = trackObject.transform;
+        obj.transform.localPosition = Vector3.zero;
 
-        VertexPath path = pathCreator.path;
-        int pointCount = pathResolution;
+        MeshFilter mf = obj.AddComponent<MeshFilter>();
+        MeshRenderer mr = obj.AddComponent<MeshRenderer>();
+        obj.AddComponent<MeshCollider>();
 
-        Vector3[] vertices = new Vector3[(pointCount + 1) * 2];
-        int[] triangles = new int[pointCount * 6];
-        Vector2[] uvs = new Vector2[vertices.Length];
+        mr.material = trackMaterial != null ? trackMaterial : CreateDefaultMaterial(new Color(0.15f, 0.15f, 0.15f));
 
-        // point에 따라 경로 생성
-        for (int i = 0; i <= pointCount; i++)
-        {
-            float t = i / (float)pointCount;
-            float distance = t * path.length;
+        VertexPath path = pathCreator.path;
+        Vector3[] vertices = new Vector3[(pathResolution + 1) * 2];
+        Vector2[] uvs = new Vector2[vertices.Length];
+        int[] triangles = new int[pathResolution * 6];
 
-            Vector3 point = path.GetPointAtDistance(distance);
-            Vector3 forward = path.GetDirectionAtDistance(distance);
-            // 오른쪽 방향 계산 (수평 평면)
-            Vector3 right = Vector3.Cross(Vector3.up, forward).normalized;
+        for (int i = 0; i <= pathResolution; i++)
+        {
+            float t = i / (float)pathResolution;
+            float dist = t * path.length;
 
-            // 좌우 정점 생성 (트랙 폭만큼)
-            vertices[i * 2] = point - right * (trackWidth / 2f);
-            vertices[i * 2 + 1] = point + right * (trackWidth / 2f);
+            Vector3 point = path.GetPointAtDistance(dist);
+            Vector3 forward = path.GetDirectionAtDistance(dist);
+            Vector3 right = Vector3.Cross(Vector3.up, forward).normalized;
 
-            // 텍스처 매핑용
-            uvs[i * 2] = new Vector2(0, distance / trackWidth);
-            uvs[i * 2 + 1] = new Vector2(1, distance / trackWidth);
-        }
+            vertices[i * 2] = GetLocal(point - right * (trackWidth / 2f));
+            vertices[i * 2 + 1] = GetLocal(point + right * (trackWidth / 2f));
 
-        // 삼각형 생성해서 면 만들기
-        for (int i = 0; i < pointCount; i++)
-        {
-            int vertIndex = i * 2;
-            int triIndex = i * 6;
+            uvs[i * 2] = new Vector2(0, dist / trackWidth);
+            uvs[i * 2 + 1] = new Vector2(1, dist / trackWidth);
+        }
 
-            triangles[triIndex] = vertIndex;
-            triangles[triIndex + 1] = vertIndex + 2;
-            triangles[triIndex + 2] = vertIndex + 1;
+        for (int i = 0; i < pathResolution; i++)
+        {
+            int v = i * 2; int tri = i * 6;
+            triangles[tri] = v; triangles[tri + 1] = v + 2; triangles[tri + 2] = v + 1;
+            triangles[tri + 3] = v + 1; triangles[tri + 4] = v + 2; triangles[tri + 5] = v + 3;
+        }
 
-            triangles[triIndex + 3] = vertIndex + 1;
-            triangles[triIndex + 4] = vertIndex + 2;
-            triangles[triIndex + 5] = vertIndex + 3;
-        }
+        Mesh mesh = new Mesh { name = "Track_Mesh", vertices = vertices, triangles = triangles, uv = uvs };
+        mesh.RecalculateNormals();
+        mf.mesh = mesh;
+        obj.GetComponent<MeshCollider>().sharedMesh = mesh;
+    }
 
-        Mesh mesh = new Mesh();
-        mesh.name = "Track_Surface";
-        mesh.vertices = vertices;
-        mesh.triangles = triangles;
-        mesh.uv = uvs;
-        mesh.RecalculateNormals();
-        mesh.RecalculateTangents();
+    void CreateCurbsSide(int side, Material mat)
+    {
+        GameObject sideObj = new GameObject($"Curb_{(side > 0 ? "Right" : "Left")}");
+        sideObj.transform.parent = trackObject.transform;
+        sideObj.transform.localPosition = Vector3.zero;
 
-        meshFilter.mesh = mesh;
-        meshCollider.sharedMesh = mesh;
-    }
+        VertexPath path = pathCreator.path;
+        // 개별 세그먼트로 생성하여 컷아웃 구현
+        for (int i = 0; i < pathResolution; i++)
+        {
+            float d1 = (i / (float)pathResolution) * path.length;
+            float d2 = ((i + 1) / (float)pathResolution) * path.length;
 
-    void CreateCurbsSide(int side, Material curbMaterial)
-    {
-        string sideName = side > 0 ? "Right" : "Left";
-        GameObject curbObj = new GameObject($"Curb_{sideName}");
-        curbObj.transform.parent = trackObject.transform;
+            if (useCutout && d1 >= cutoutStartDistance && d1 <= cutoutEndDistance) continue;
 
-        MeshFilter meshFilter = curbObj.AddComponent<MeshFilter>();
-        MeshRenderer meshRenderer = curbObj.AddComponent<MeshRenderer>();
-        
-        meshRenderer.material = curbMaterial != null ? curbMaterial : CreateDefaultMaterial(side > 0 ? Color.white : Color.red);
+            CreateSimpleQuad(d1, d2, side, trackWidth / 2f, curbWidth, curbHeight, sideObj.transform, mat, "Curb_Seg");
+        }
+    }
 
-        VertexPath path = pathCreator.path;
-        int pointCount = pathResolution;
+    void CreateBarrierSide(int side)
+    {
+        GameObject sideObj = new GameObject($"Barrier_{(side > 0 ? "Right" : "Left")}");
+        sideObj.transform.parent = trackObject.transform;
+        sideObj.transform.localPosition = Vector3.zero;
 
-        Vector3[] vertices = new Vector3[(pointCount + 1) * 4];
-        int[] triangles = new int[pointCount * 12];
+        VertexPath path = pathCreator.path;
+        float totalOffset = trackWidth / 2f + curbWidth + barrierOffset;
 
-        for (int i = 0; i <= pointCount; i++)
-        {
-            float t = i / (float)pointCount;
-            float distance = t * path.length;
+        for (int i = 0; i < pathResolution; i++)
+        {
+            float d1 = (i / (float)pathResolution) * path.length;
+            float d2 = ((i + 1) / (float)pathResolution) * path.length;
 
-            Vector3 point = path.GetPointAtDistance(distance);
-            Quaternion rotation = path.GetRotationAtDistance(distance);
-            Vector3 right = rotation * Vector3.right;
+            if (useCutout && d1 >= cutoutStartDistance && d1 <= cutoutEndDistance) continue;
 
-            Vector3 innerPoint = point + right * (trackWidth / 2f * side);
-            Vector3 outerPoint = innerPoint + right * (curbWidth * side);
+            Vector3 p1 = path.GetPointAtDistance(d1);
+            Vector3 p2 = path.GetPointAtDistance(d2);
+            Vector3 r1 = Vector3.Cross(Vector3.up, path.GetDirectionAtDistance(d1)).normalized;
+            Vector3 r2 = Vector3.Cross(Vector3.up, path.GetDirectionAtDistance(d2)).normalized;
 
-            vertices[i * 4] = innerPoint;
-            vertices[i * 4 + 1] = outerPoint;
-            vertices[i * 4 + 2] = innerPoint + Vector3.up * curbHeight;
-            vertices[i * 4 + 3] = outerPoint + Vector3.up * curbHeight;
-        }
+            Vector3 b1 = p1 + r1 * totalOffset * side;
+            Vector3 b2 = p2 + r2 * totalOffset * side;
 
-        for (int i = 0; i < pointCount; i++)
-        {
-            int vertIndex = i * 4;
-            int triIndex = i * 12;
+            GameObject seg = new GameObject("Barrier_Seg");
+            seg.transform.parent = sideObj.transform;
+            MeshFilter mf = seg.AddComponent<MeshFilter>();
+            MeshRenderer mr = seg.AddComponent<MeshRenderer>();
+            seg.AddComponent<MeshCollider>();
+            mr.material = barrierMaterial != null ? barrierMaterial : CreateDefaultMaterial(Color.gray);
 
-            triangles[triIndex] = vertIndex + 2;
-            triangles[triIndex + 1] = vertIndex + 6;
-            triangles[triIndex + 2] = vertIndex + 3;
-            triangles[triIndex + 3] = vertIndex + 3;
-            triangles[triIndex + 4] = vertIndex + 6;
-            triangles[triIndex + 5] = vertIndex + 7;
+            Vector3[] v = new Vector3[4];
+            v[0] = GetLocal(b1); v[1] = GetLocal(b2);
+            v[2] = GetLocal(b1 + Vector3.up * barrierHeight); v[3] = GetLocal(b2 + Vector3.up * barrierHeight);
+            
+            int[] t = (side < 0) ? new int[] { 0, 1, 2, 2, 1, 3 } : new int[] { 0, 2, 1, 1, 2, 3 };
+            Mesh m = new Mesh { vertices = v, triangles = t };
+            m.RecalculateNormals();
+            mf.mesh = m;
+            seg.GetComponent<MeshCollider>().sharedMesh = m;
+        }
+    }
 
-            triangles[triIndex + 6] = vertIndex + 1;
-            triangles[triIndex + 7] = vertIndex + 5;
-            triangles[triIndex + 8] = vertIndex + 3;
-            triangles[triIndex + 9] = vertIndex + 3;
-            triangles[triIndex + 10] = vertIndex + 5;
-            triangles[triIndex + 11] = vertIndex + 7;
-        }
+    // 커브 쿼드 생성을 위한 헬퍼 함수
+    void CreateSimpleQuad(float d1, float d2, int side, float startOffset, float width, float height, Transform parent, Material mat, string name)
+    {
+        VertexPath path = pathCreator.path;
+        Vector3 p1 = path.GetPointAtDistance(d1);
+        Vector3 p2 = path.GetPointAtDistance(d2);
+        Vector3 r1 = Vector3.Cross(Vector3.up, path.GetDirectionAtDistance(d1)).normalized;
+        Vector3 r2 = Vector3.Cross(Vector3.up, path.GetDirectionAtDistance(d2)).normalized;
 
-        Mesh mesh = new Mesh();
-        mesh.name = $"Curb_{sideName}";
-        mesh.vertices = vertices;
-        mesh.triangles = triangles;
-        mesh.RecalculateNormals();
+        Vector3 in1 = p1 + r1 * startOffset * side;
+        Vector3 out1 = in1 + r1 * width * side;
+        Vector3 in2 = p2 + r2 * startOffset * side;
+        Vector3 out2 = in2 + r2 * width * side;
 
-        meshFilter.mesh = mesh;
-    }
+        GameObject seg = new GameObject(name);
+        seg.transform.parent = parent;
+        MeshFilter mf = seg.AddComponent<MeshFilter>();
+        seg.AddComponent<MeshRenderer>().material = mat;
 
-    void CreateBarrierSide(int side)
-    {
-        string sideName = side > 0 ? "Right" : "Left";
-        GameObject barrierObj = new GameObject($"Barrier_{sideName}");
-        barrierObj.transform.parent = trackObject.transform;
+        Vector3[] v = new Vector3[4];
+        v[0] = GetLocal(in1 + Vector3.up * height); v[1] = GetLocal(out1 + Vector3.up * height);
+        v[2] = GetLocal(in2 + Vector3.up * height); v[3] = GetLocal(out2 + Vector3.up * height);
 
-        MeshFilter meshFilter = barrierObj.AddComponent<MeshFilter>();
-        MeshRenderer meshRenderer = barrierObj.AddComponent<MeshRenderer>();
-        MeshCollider meshCollider = barrierObj.AddComponent<MeshCollider>();
+        int[] t = (side < 0) ? new int[] { 0, 1, 2, 2, 1, 3 } : new int[] { 0, 2, 1, 1, 2, 3 };
+        Mesh m = new Mesh { vertices = v, triangles = t };
+        m.RecalculateNormals();
+        mf.mesh = m;
+    }
 
-        meshRenderer.material = barrierMaterial != null ? barrierMaterial : CreateDefaultMaterial(new Color(0.7f, 0.7f, 0.7f));
-
-        VertexPath path = pathCreator.path;
-        int pointCount = pathResolution;
-
-        Vector3[] vertices = new Vector3[(pointCount + 1) * 2];
-        int[] triangles = new int[pointCount * 6];
-
-        float offset = (trackWidth / 2f + curbWidth + barrierOffset) * side;
-
-        for (int i = 0; i <= pointCount; i++)
-        {
-            float t = i / (float)pointCount;
-            float distance = t * path.length;
-
-            Vector3 point = path.GetPointAtDistance(distance);
-            Vector3 forward = path.GetDirectionAtDistance(distance);
-            // 수정: Right 벡터를 직접 계산
-            Vector3 right = Vector3.Cross(Vector3.up, forward).normalized;
-
-            Vector3 basePoint = point + right * offset;
-
-            vertices[i * 2] = basePoint;
-            vertices[i * 2 + 1] = basePoint + Vector3.up * barrierHeight;
-        }
-
-        for (int i = 0; i < pointCount; i++)
-        {
-            int vertIndex = i * 2;
-            int triIndex = i * 6;
-
-            triangles[triIndex] = vertIndex;
-            triangles[triIndex + 1] = vertIndex + 2;
-            triangles[triIndex + 2] = vertIndex + 1;
-
-            triangles[triIndex + 3] = vertIndex + 1;
-            triangles[triIndex + 4] = vertIndex + 2;
-            triangles[triIndex + 5] = vertIndex + 3;
-        }
-
-        Mesh mesh = new Mesh();
-        mesh.name = $"Barrier_{sideName}";
-        mesh.vertices = vertices;
-        mesh.triangles = triangles;
-        mesh.RecalculateNormals();
-
-        meshFilter.mesh = mesh;
-        meshCollider.sharedMesh = mesh;
-    }
-
-    Material CreateDefaultMaterial(Color color)
-    {
-        Material mat = new Material(Shader.Find("Standard"));
-        mat.color = color;
-        mat.SetFloat("_Metallic", 0.1f);
-        mat.SetFloat("_Glossiness", 0.3f);
-        return mat;
-    }
+    Material CreateDefaultMaterial(Color color)
+    {
+        Material mat = new Material(Shader.Find("Standard"));
+        mat.color = color;
+        return mat;
+    }
 }
