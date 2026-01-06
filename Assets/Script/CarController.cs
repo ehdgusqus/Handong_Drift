@@ -3,6 +3,10 @@ using TMPro;
 
 public class CarController : MonoBehaviour
 {
+    [Header("Arduino Connection")]
+    // ★ 1. 아두이노 스크립트를 연결할 변수 추가
+    public ArduinoInput arduinoInput; 
+
     [Header("References")]
     public Rigidbody rb;
     public WheelCollider wheelFL, wheelFR, wheelRL, wheelRR;
@@ -35,7 +39,7 @@ public class CarController : MonoBehaviour
     public float brakeForce = 5000f;
     public float rearBrakeRatio = 0.7f;
 
-    private float throttleInput; // -1 ~ 1 (S=후진, W=전진)
+    private float throttleInput; // -1 ~ 1
     private float steerInput;
     private bool braking;
 
@@ -47,19 +51,35 @@ public class CarController : MonoBehaviour
 
     void Update()
     {
-        // W=1, S=-1, 아무것도 안 누르면 0
-        throttleInput = 0f;
-        if (Input.GetKey(KeyCode.W)) throttleInput = 1f;
-        if (Input.GetKey(KeyCode.S)) throttleInput = -1f;
+        // ★ 2. 입력 방식 변경 (아두이노 우선, 없으면 키보드)
+        if (arduinoInput != null)
+        {
+            // 아두이노 값 받아오기
+            // steerValue: -1(좌) ~ 1(우)
+            // accelValue: -1(아래) ~ 1(위) -> 조이스틱 방향에 따라 부호를 바꿔야 할 수도 있음
+            
+            steerInput = arduinoInput.steerValue;
+            
+            // 조이스틱 Y축을 악셀로 사용 (-1:후진, 1:전진)
+            // 만약 위로 밀었는데 후진하면 부호(-)를 붙이세요: -arduinoInput.accelValue
+            throttleInput = arduinoInput.accelValue; 
 
-        // 브레이크 (Space)
-        braking = Input.GetKey(KeyCode.Space);
+            // 조이스틱 버튼(꾹 누름)을 브레이크로 사용
+            braking = arduinoInput.isBtnPressed;
+        }
+        else
+        {
+            // 아두이노 연결 안 했을 때 비상용 (키보드)
+            throttleInput = 0f;
+            if (Input.GetKey(KeyCode.W)) throttleInput = 1f;
+            if (Input.GetKey(KeyCode.S)) throttleInput = -1f;
+            braking = Input.GetKey(KeyCode.Space);
+            steerInput = Input.GetAxis("Horizontal");
+        }
 
-        // 조향
-        steerInput = Input.GetAxis("Horizontal");
-
-        // 속도 UI
-        float spd = rb.linearVelocity.magnitude * 3.6f;
+        // 속도 UI (유니티 버전에 따라 rb.linearVelocity 혹은 rb.velocity 사용)
+        // 작성해주신 코드 원본인 linearVelocity 유지
+        float spd = rb.linearVelocity.magnitude * 3.6f; 
         if (speedText != null)
             speedText.text = Mathf.RoundToInt(spd) + " km/h";
     }
@@ -75,7 +95,7 @@ public class CarController : MonoBehaviour
         float wheelRpm = (wheelRL.rpm + wheelRR.rpm) * 0.5f;
         float engineRpm = Mathf.Clamp(Mathf.Abs(wheelRpm) * finalDrive * gearRatios[currentGear], 1000f, maxRPM);
 
-        // Auto gear shifting (단순화)
+        // Auto gear shifting
         if (engineRpm > maxRPM * 0.95f && currentGear < gearRatios.Length - 1) currentGear++;
         if (engineRpm < 2000f && currentGear > 0) currentGear--;
 
