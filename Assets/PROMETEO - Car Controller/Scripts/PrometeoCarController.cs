@@ -13,9 +13,7 @@ using UnityEngine.UI;
 
 public class PrometeoCarController : MonoBehaviour
 {
-    //ARDUINO INPUT
       [Space(20)]
-      //[Header("ARDUINO SETTINGS")]
       [Space(10)]
       public ArduinoInput arduinoInput; 
 
@@ -234,18 +232,14 @@ public class PrometeoCarController : MonoBehaviour
       localVelocityX = transform.InverseTransformDirection(carRigidbody.linearVelocity).x;
       localVelocityZ = transform.InverseTransformDirection(carRigidbody.linearVelocity).z;
 
-      // ★ [아두이노 로직] 아두이노가 연결되어 있으면 우선 실행
       if (arduinoInput != null)
       {
-          // 1. 조향 (Steering) - 아날로그 값을 직접 반영
           steeringAxis = arduinoInput.steerValue;
           
-          // 핸들을 꺾었을 때 부드럽게 돌아가도록 처리 (기존 TurnLeft/Right 로직의 아날로그 버전)
           var steeringAngle = steeringAxis * maxSteeringAngle;
           frontLeftCollider.steerAngle = Mathf.Lerp(frontLeftCollider.steerAngle, steeringAngle, steeringSpeed);
           frontRightCollider.steerAngle = Mathf.Lerp(frontRightCollider.steerAngle, steeringAngle, steeringSpeed);
 
-          // 2. 가속/후진 (Throttle)
           float accel = -arduinoInput.accelValue;
 
           if (accel > 0.1f) // 전진
@@ -264,15 +258,13 @@ public class PrometeoCarController : MonoBehaviour
           {
               ThrottleOff();
           }
-
-          // 아무 입력도 없고 브레이크도 안 밟았으면 감속
+          
           if (Mathf.Abs(accel) <= 0.1f && !arduinoInput.isBtnPressed && !deceleratingCar)
           {
               InvokeRepeating("DecelerateCar", 0f, 0.1f);
               deceleratingCar = true;
           }
 
-          // 3. 핸드브레이크 (조이스틱 버튼)
           if (arduinoInput.isBtnPressed)
           {
               CancelInvoke("DecelerateCar");
@@ -285,8 +277,7 @@ public class PrometeoCarController : MonoBehaviour
           }
 
       }
-      else if (useTouchControls && touchControlsSetup){ // 기존 터치 컨트롤 로직
-        // ... (기존 코드 유지)
+      else if (useTouchControls && touchControlsSetup){ 
         if(throttlePTI.buttonPressed){
           CancelInvoke("DecelerateCar");
           deceleratingCar = false;
@@ -324,20 +315,20 @@ public class PrometeoCarController : MonoBehaviour
 
       }else{ // 기존 키보드 컨트롤 로직
 
-        if(Input.GetKey(KeyCode.W)){
+        if(Input.GetKey(KeyCode.UpArrow)){
           CancelInvoke("DecelerateCar");
           deceleratingCar = false;
           GoForward();
         }
-        if(Input.GetKey(KeyCode.S)){
+        if(Input.GetKey(KeyCode.DownArrow)){
           CancelInvoke("DecelerateCar");
           deceleratingCar = false;
           GoReverse();
         }
-        if(Input.GetKey(KeyCode.A)){
+        if(Input.GetKey(KeyCode.LeftArrow)){
           TurnLeft();
         }
-        if(Input.GetKey(KeyCode.D)){
+        if(Input.GetKey(KeyCode.RightArrow)){
           TurnRight();
         }
         if(Input.GetKey(KeyCode.Space)){
@@ -348,14 +339,14 @@ public class PrometeoCarController : MonoBehaviour
         if(Input.GetKeyUp(KeyCode.Space)){
           RecoverTraction();
         }
-        if((!Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.W))){
+        if((!Input.GetKey(KeyCode.DownArrow) && !Input.GetKey(KeyCode.UpArrow))){
           ThrottleOff();
         }
-        if((!Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.W)) && !Input.GetKey(KeyCode.Space) && !deceleratingCar){
+        if((!Input.GetKey(KeyCode.DownArrow) && !Input.GetKey(KeyCode.UpArrow)) && !Input.GetKey(KeyCode.Space) && !deceleratingCar){
           InvokeRepeating("DecelerateCar", 0f, 0.1f);
           deceleratingCar = true;
         }
-        if(!Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D) && steeringAxis != 0f){
+        if(!Input.GetKey(KeyCode.LeftArrow) && !Input.GetKey(KeyCode.RightArrow) && steeringAxis != 0f){
           ResetSteeringAngle();
         }
       }
