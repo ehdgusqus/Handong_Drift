@@ -44,19 +44,15 @@ public class UIRaceStart : MonoBehaviour
     {
         yield return new WaitForSeconds(1.0f); 
 
-        // 빨간불 채우기
         foreach (var img in signalImages)
         {
             img.color = redColor;
-            // 여기에 '띡' 소리를 재생하면(AudioSource.PlayOneShot), 
-            // 위의 soundsToMute에 포함되지 않았으므로 잘 들립니다.
             yield return new WaitForSeconds(lightInterval);
         }
 
-        float randomDelay = Random.Range(0.2f, 1.0f);
-        yield return new WaitForSeconds(randomDelay);
+        float Delay = 1.0f;
+        yield return new WaitForSeconds(Delay);
 
-        // 초록불 변경
         foreach (var img in signalImages) img.color = greenColor;
 
         StartGame();
@@ -70,7 +66,6 @@ public class UIRaceStart : MonoBehaviour
         isRaceStarted = true;
         if (carController != null) carController.enabled = true;
 
-        // [추가됨] 출발 시 소리 다시 켜기
         foreach (var audio in soundsToMute)
         {
             if (audio != null) audio.mute = false;

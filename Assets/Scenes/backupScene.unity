@@ -164664,8 +164664,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   soundsToMute:
   - {fileID: 2093427527}
-  - {fileID: 701504300}
-  - {fileID: 55862460}
   signalImages:
   - {fileID: 1006286297}
   - {fileID: 221893972}
