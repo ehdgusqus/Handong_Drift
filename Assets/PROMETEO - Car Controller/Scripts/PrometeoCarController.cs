@@ -337,7 +337,7 @@ public class PrometeoCarController : MonoBehaviour
     {
         // 속도가 빠를수록 핸들 꺾이는 각도를 줄임 (고속 주행 안정성)
         float speedFactor = Mathf.Clamp01(Mathf.Abs(carSpeed) / maxSpeed);
-        float currentAngleLimit = Mathf.Lerp(maxSteeringAngle, maxSteeringAngle * 0.2f, speedFactor);
+        float currentAngleLimit = Mathf.Lerp(maxSteeringAngle, maxSteeringAngle * 0.1f, speedFactor);
 
         var steeringAngle = steeringAxis * currentAngleLimit;
 

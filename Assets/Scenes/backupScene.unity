@@ -83838,6 +83838,39 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!1 &375901725
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 375901726}
+  m_Layer: 0
+  m_Name: Sound
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &375901726
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 375901725}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 821.0855, y: 999.2066, z: 259.97653}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2093427528}
+  - {fileID: 701504301}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &376223514
 GameObject:
   m_ObjectHideFlags: 0
@@ -120217,6 +120250,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f70d98c9787ea2649ab682ae24947149, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  soundsToMute: []
   signalImages:
   - {fileID: 1559934755}
   - {fileID: 599702787}
@@ -143493,6 +143527,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f70d98c9787ea2649ab682ae24947149, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  soundsToMute: []
   signalImages:
   - {fileID: 1940686958}
   - {fileID: 847831200}
@@ -161586,12 +161621,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 701504299}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 423.20926, y: 98.19965, z: -62.67195}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -397.87625, y: -901.00696, z: -322.6485}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 375901726}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!43 &701776509
 Mesh:
@@ -164627,6 +164662,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f70d98c9787ea2649ab682ae24947149, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  soundsToMute:
+  - {fileID: 2093427527}
+  - {fileID: 701504300}
+  - {fileID: 55862460}
   signalImages:
   - {fileID: 1006286297}
   - {fileID: 221893972}
@@ -394287,6 +394326,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f70d98c9787ea2649ab682ae24947149, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  soundsToMute: []
   signalImages:
   - {fileID: 71199293}
   - {fileID: 473642146}
@@ -469972,12 +470012,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2093427526}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 423.20926, y: 98.19965, z: -62.67195}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -397.87625, y: -901.00696, z: -322.6485}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 375901726}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!43 &2093885612
 Mesh:
@@ -482843,8 +482883,6 @@ SceneRoots:
   - {fileID: 2000894536}
   - {fileID: 749170936}
   - {fileID: 1941479080}
-  - {fileID: 2093427528}
-  - {fileID: 701504301}
   - {fileID: 2046984098}
   - {fileID: 1214557500}
   - {fileID: 1069551656}
@@ -482854,3 +482892,4 @@ SceneRoots:
   - {fileID: 55862461}
   - {fileID: 1171633203}
   - {fileID: 935777340}
+  - {fileID: 375901726}
